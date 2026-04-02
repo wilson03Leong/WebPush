@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Web Push Demo</title>
+  <meta charset="UTF-8">
+  <title>WebPush Demo</title>
+
+  <!-- 先引入 WebPush SDK -->
+  <script src="./webPushSdk.min.1.0.0.js"></script>
+
+  <!-- 再引入你自己的 JS -->
+  <script src="app.js"></script>
 </head>
 <body>
   <h1>Web Push Demo</h1>
   <button onclick="subscribe()">Subscribe</button>
-
-  <script src="app.js"></script>
 </body>
 </html>
