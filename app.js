@@ -24,6 +24,7 @@ async function subscribe() {
     MTpushInterface.init({
       appkey: appkey,
       user_str: "wilson_test_user", // 随便填一个唯一用户ID
+      swUrl: './sw.js',
 
       success(data) {
         console.log("初始化成功:", data);
