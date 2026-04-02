@@ -1,8 +1,5 @@
-// app.js
-// 替换成你的现有 WebPush AppKey
-const webAppKey = "867a5b19d5b3f56f611c21e8";
+const appkey = "867a5b19d5b3f56f611c21e8";
 
-// 点击订阅按钮时调用
 async function subscribe() {
   if (!('serviceWorker' in navigator)) {
     alert("Service Worker not supported");
@@ -10,31 +7,51 @@ async function subscribe() {
   }
 
   try {
-    // 注册 Service Worker
+    // 注册 SW（必须）
     const registration = await navigator.serviceWorker.register('sw.js');
     console.log("Service Worker registered:", registration);
 
-    // 请求通知权限
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      alert("Notification permission denied");
-      return;
-    }
+    // 初始化前先绑定事件（官方要求）
+    MTpushInterface.mtPush.onDisconnect(function () {
+      console.log("onDisconnect");
+    });
 
-    // 使用 EngageLab Web SDK 初始化 WebPush
-    // SDK 会自动处理 subscription 和 VAPID，不需要自己填 applicationServerKey
-    MTPushPrivatesApi.initWebPush(webAppKey)
-      .then(subscription => {
-        console.log("WebPush 订阅成功：", subscription);
-        alert("订阅成功！Console 可查看 subscription");
-      })
-      .catch(err => {
-        console.error("WebPush 订阅失败：", err);
-        alert("订阅失败，查看 Console 日志");
-      });
+    MTpushInterface.onMsgReceive((msgData) => {
+      console.log("收到推送:", msgData);
+    });
+
+    // 初始化
+    MTpushInterface.init({
+      appkey: appkey,
+      user_str: "wilson_test_user", // 随便填一个唯一用户ID
+
+      success(data) {
+        console.log("初始化成功:", data);
+        alert("订阅成功！");
+      },
+
+      fail(err) {
+        console.error("初始化失败:", err);
+        alert("订阅失败，看 console");
+      },
+
+      webPushcallback(code, tip) {
+        console.log("状态:", code, tip);
+      },
+
+      canGetInfo(data) {
+        console.log("配置:", data);
+        console.log("RegId:", MTpushInterface.getRegistrationID());
+      },
+
+      // 👉 关键：请求通知权限
+      custom: (requestPermission) => {
+        requestPermission();
+      }
+    });
 
   } catch (err) {
-    console.error("注册 Service Worker 或订阅失败：", err);
-    alert("操作失败，查看 Console 日志");
+    console.error("错误:", err);
+    alert("失败，查看 console");
   }
 }
