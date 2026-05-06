@@ -2,16 +2,27 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>WebPush Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Push Demo</title>
 
-  <!-- 先引入 WebPush SDK -->
-  <script src="./webSdk.produce.min.3.3.5.js"></script>
+  <!-- ✅ PWA 必须：引用 manifest -->
+  <link rel="manifest" href="/manifest.json">
 
-  <!-- 再引入你自己的 JS -->
-  <script src="app.js"></script>
+  <!-- ✅ iOS Safari 专用 meta -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="WebPush Demo">
+  <link rel="apple-touch-icon" href="/icon.png">
 </head>
 <body>
-  <h1>Web Push Demo</h1>
-  <button onclick="subscribe()">Subscribe</button>
+  <h1>EngageLab Web Push Demo</h1>
+  <button id="subscribeBtn">订阅推送</button>
+  <p id="status">状态：未订阅</p>
+
+  <!-- ✅ 引入EngageLab Web SDK -->
+  <script src="https://cdn.engagelab.com/websdk/MTPush.5.1.2.min.js"></script>
+
+  <!-- 你的业务逻辑 -->
+  <script src="app.js"></script>
 </body>
 </html>
