@@ -1,58 +1,64 @@
-const appkey = "867a5b19d5b3f56f611c21e8";
+const webAppKey = "867a5b19d5b3f56f611c21e8";
 
-async function subscribe() {
-  if (!('serviceWorker' in navigator)) {
-    alert("Service Worker not supported");
-    return;
+// ✅ user_str 必须稳定不变，同一个浏览器每次都要一样
+// 用 localStorage 保存，没有才生成新的
+function getUserStr() {
+  let userStr = localStorage.getItem('engagelab_user_str');
+  if (!userStr) {
+    userStr = "demo_user_" + Date.now();
+    localStorage.setItem('engagelab_user_str', userStr);
   }
-
-  try {
-    // 注册 SW（必须）
-    const registration = await navigator.serviceWorker.register('sw.js');
-    console.log("Service Worker registered:", registration);
-
-    // 初始化前先绑定事件（官方要求）
-    MTpushInterface.mtPush.onDisconnect(function () {
-      console.log("onDisconnect");
-    });
-
-    MTpushInterface.onMsgReceive((msgData) => {
-      console.log("收到推送:", msgData);
-    });
-
-    // 初始化
-    MTpushInterface.init({
-      appkey: appkey,
-      user_str: "wilson_test_user", // 随便填一个唯一用户ID
-      swUrl: './sw.js',
-
-      success(data) {
-        console.log("初始化成功:", data);
-        alert("订阅成功！");
-      },
-
-      fail(err) {
-        console.error("初始化失败:", err);
-        alert("订阅失败，看 console");
-      },
-
-      webPushcallback(code, tip) {
-        console.log("状态:", code, tip);
-      },
-
-      canGetInfo(data) {
-        console.log("配置:", data);
-        console.log("RegId:", MTpushInterface.getRegistrationID());
-      },
-
-      // 👉 关键：请求通知权限
-      custom: (requestPermission) => {
-        requestPermission();
-      }
-    });
-
-  } catch (err) {
-    console.error("错误:", err);
-    alert("失败，查看 console");
-  }
+  return userStr;
 }
+
+// 初始化配置
+const config = {
+  appkey: webAppKey,
+  user_str: getUserStr(),
+
+  success: function(data) {
+    console.log("✅ SDK初始化成功", data);
+    document.getElementById('status').textContent = '状态：SDK已初始化';
+  },
+
+  fail: function(data) {
+    console.error("❌ SDK初始化失败", data);
+    document.getElementById('status').textContent = '状态：初始化失败';
+  },
+
+  canGetInfo: function(data) {
+    console.log("✅ 订阅成功，RegId:", MTpushInterface.getRegistrationID());
+    console.log("完整数据:", data);
+    document.getElementById('status').textContent =
+      '状态：已订阅 (RegId: ' + MTpushInterface.getRegistrationID() + ')';
+    alert("订阅成功！");
+  },
+
+  webPushcallback: function(code, tip) {
+    console.log("通知权限状态:", code, tip);
+  }
+};
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+
+  document.getElementById('subscribeBtn').addEventListener('click', function() {
+
+    if (!('serviceWorker' in navigator)) {
+      alert("你的浏览器不支持Service Worker");
+      return;
+    }
+
+    if (!('PushManager' in window)) {
+      alert("你的浏览器不支持Web Push");
+      return;
+    }
+
+    MTpushInterface.init(config);
+  });
+
+  MTpushInterface.onMsgReceive(function(res) {
+    console.log("📩 收到推送消息:", res);
+    alert("收到推送: " + JSON.stringify(res));
+  });
+});
